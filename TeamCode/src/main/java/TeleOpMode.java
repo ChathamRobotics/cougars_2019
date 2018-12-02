@@ -3,7 +3,6 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 import java.lang.*;
@@ -11,13 +10,13 @@ import java.lang.*;
 
 @TeleOp(name = "Basic: TeleOpMode", group = "Linear Opmode")
 ////THIS BELONGS TO 9853 :)
-class
-TeleOpMode extends LinearOpMode
+public class TeleOpMode extends LinearOpMode
 {
 
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
-    private DcMotor LeftDrive, RightDrive;
+    private DcMotor LeftDrive;
+    private DcMotor RightDrive;
 
     @Override
     public void runOpMode()
