@@ -80,6 +80,7 @@ public class TeleOpMode extends LinearOpMode
             }
             else if (gamepad2.dpad_down == true)
             {
+                //DOWN
                 pinionPower = -0.45;
             }
             else
