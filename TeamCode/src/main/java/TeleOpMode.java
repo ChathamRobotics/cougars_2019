@@ -10,15 +10,17 @@ import java.lang.*;
 
 
 @TeleOp(name = "Basic: TeleOpMode", group = "Linear Opmode")
-////THIS BELONGS TO 9853 :)
-class TeleOpMode extends LinearOpMode{
+////THIS BELONGS TO 9853! :)
+public class TeleOpMode extends LinearOpMode
+{
 
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
-    private DcMotor frontLeftDrive, frontRightDrive, backLeftDrive, backRightDrive;
+    private DcMotor leftDrive, rightDrive, collection, drawerSlide, leftArm, rightArm, hangClaw;
 
     @Override
-    public void runOpMode() {
+    public void runOpMode()
+    {
         telemetry.addData("Status", "Initialized");
         telemetry.update();
 
@@ -26,22 +28,22 @@ class TeleOpMode extends LinearOpMode{
         // to 'get' must correspond to the names assigned during the robot configuration
 
         //Chassis Motors
-        frontLeftDrive  = hardwareMap.get(DcMotor.class, "frontLeftDrive");
-        backLeftDrive = hardwareMap. get(DcMotor.class, "backLeftDrive");
-        backRightDrive = hardwareMap.get(DcMotor.class, "backRightDrive");
-        frontRightDrive =  hardwareMap.get(DcMotor.class, "frontRightDrive");
-        /*(Hub 1)
-            frontLeftDrive= Port 0
-            backLeftDrive= Port 1
-            backRightDrive= Port 2
-            frontRightDrive= Port 3
-         */
+        leftDrive = hardwareMap.get(DcMotor.class, "leftDrive");
+        rightDrive = hardwareMap.get(DcMotor.class, "rightDrive");
+        drawerSlide = hardwareMap.get(DcMotor.class, "drawerSlide");
+        collection = hardwareMap.get(DcMotor.class, "collection");
+        leftArm = hardwareMap.get(DcMotor.class, "leftArm");
+        rightArm = hardwareMap.get(DcMotor.class, "rightArm");
+        hangClaw = hardwareMap.get(DcMotor.class, "hangClaw");
 
         // Right motors are reversed because it is oriented differently then the Left side
-        frontLeftDrive.setDirection(DcMotor.Direction.FORWARD);
-        backLeftDrive.setDirection(DcMotor.Direction.FORWARD);
-        backRightDrive.setDirection(DcMotor.Direction.REVERSE);
-        frontRightDrive.setDirection(DcMotor.Direction.REVERSE);
+        leftDrive.setDirection(DcMotor.Direction.FORWARD);
+        rightDrive.setDirection(DcMotor.Direction.REVERSE);
+        collection.setDirection(DcMotor.Direction.REVERSE);
+        drawerSlide.setDirection(DcMotor.Direction.FORWARD);
+        leftArm.setDirection(DcMotor.Direction.REVERSE);
+        rightArm.setDirection(DcMotor.Direction.FORWARD);
+        hangClaw.setDirection(DcMotor.Direction.FORWARD);
 
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
@@ -50,93 +52,93 @@ class TeleOpMode extends LinearOpMode{
         // run until the end of the match (driver presses STOP)
         telemetry.addData("Status", "before While Loop");
         telemetry.update();
-        while (opModeIsActive()) {
+        while (opModeIsActive())
+        {
 
             // Setup a variable for each drive wheel to save power level for telemetry
             double leftPower;
             double rightPower;
-            double pulleyPower;
-            double armPower;
+            double pinionPower;
             double collectionPower;
             double drive;
             double turn;
+            double armPower;
+            double clawPower;
 
-
-            // Choose to drive using either Tank Mode, or POV Mode
-            // Comment out the method that's not used.  The default below is POV.
-
-            // POV Mode uses left stick to go forward, and right stick to turn.
             // - This uses basic math to combine motions and is easier to drive straight.
-            drive = -gamepad1.left_stick_y;
-            turn  =  gamepad1.right_stick_x;
-            leftPower   = Range.clip(drive + turn, -1.0, 1.0) ;
-            rightPower   = Range.clip(drive - turn, -1.0, 1.0) ;
+            drive = - gamepad1.left_stick_y;
+            turn = -gamepad1.right_stick_x;
+
+            rightPower = Range.clip(-(drive + turn), -1.0, 1.0) ;
+            leftPower = Range.clip(-(drive - turn), -1.0, 1.0 );
 
 
-            // Tank Mode uses one stick to control each wheel.
-            // - This requires no math, but it is hard to drive forward slowly and keep straight.
-            //leftPower  = -gamepad1.left_stick_y ;
-            //rightPower = -gamepad1.right_stick_y ;
-
-            // Send calculated power to wheels
-            frontLeftDrive.setPower(leftPower);
-            backLeftDrive.setPower(leftPower);
-            backRightDrive.setPower(rightPower);
-            frontRightDrive.setPower(rightPower);
-
-            telemetry.addData("Status", "Run Time: " + runtime.toString());
-            telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
-            telemetry.update();
-
-            // read the gamepad dpad actuator to see if we need to move the arm
-            // the dpad_up button will run the pulley to reel in and pull up the arm
-            // the dpad_down button will run the pulley the other way and reel out to let the arm down
-            if (gamepad2.dpad_up == true) {
-                pulleyPower = 0.45;
-            } else if (gamepad2.dpad_down == true) {
-                pulleyPower = -0.45;
-            } else {
-                pulleyPower = 0.0;
+            if (gamepad2.dpad_up == true)
+            {
+                //UP
+                pinionPower =   0.45;
+            }
+            else if (gamepad2.dpad_down == true)
+            {
+                pinionPower = -0.45;
+            }
+            else
+            {
+                pinionPower=0;
             }
 
-            // read the right_trigger button to see if is pressed more than half way.
-            // if it is not pressed more than half way, then look at the right_bumper button.
-            // if the bumper button is pressed, then reverse the collector
-            // if neither one is pressed, then stop.
-            // the trigger is a float, so we need to read it and compare to a threshold of 50%.
-
-            if (gamepad2.right_trigger > 0.50) {   // if the trigger is pressed more than halfway down, call it "on"
-                // and run the collector at 45% power
+            if (gamepad2.right_bumper == true)
+            {
+                // run the collector at 45% power
                 collectionPower = 0.45;
-
-            } else if (gamepad2.right_bumper == true) {  // if the trigger was not pressed or pressed only a little, ignore it.
-                // instead, read the bumper button.
-
+            }
+            else if (gamepad2.left_bumper == true)
+            {
+                // set collector power to 45% but invert so it is in reverse
                 collectionPower = -0.45;
-
-            } else { // if neither button was pressed, then turn it off.
-
+            }
+            else
+            {
+                // if neither button was pressed, then turn it off.
                 collectionPower = 0.0;
             }
 
-            //read the gamepad buttons for the arm to see if we need to move the arm
-            // if the left bumper button is pressed we go up
-            // if the left trigger button is pressed we go down.
-            if (gamepad2.left_trigger > 0.50) {
-
+            //ARM POWER
+            if (gamepad2.right_trigger > 0)
+            {
                 armPower = 0.45;
-
-            } else if (gamepad2.left_bumper == true){
-
+            }
+            else if  (gamepad2.left_trigger > 0)
+            {
                 armPower = -0.45;
-
-            }else {
-
-                armPower = 0.0;
+            }
+            else
+            {
+                armPower=0;
             }
 
+            //CLAMP
+            if (gamepad1.right_trigger > 0)
+            {
+                clawPower = 0.45;
+            }
+            else if  (gamepad1.left_trigger > 0)
+            {
+                clawPower = -0.45;
+            }
+            else
+            {
+                clawPower=0;
+            }
 
-
+            // Send calculated power to motors
+            leftDrive.setPower(leftPower);
+            rightDrive.setPower(rightPower);
+            collection.setPower(collectionPower);
+            drawerSlide.setPower(pinionPower);
+            leftArm.setPower(armPower);
+            rightArm.setPower(armPower);
+            hangClaw.setPower(clawPower);
 
             /* Show the elapsed game time and wheel power.
             telemetry.addData("Status", "Run Time: " + runtime.toString());
