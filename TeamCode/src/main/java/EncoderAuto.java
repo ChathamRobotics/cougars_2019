@@ -21,10 +21,10 @@ abstract public class EncoderAuto extends LinearOpMode {
     @Override
     public void runOpMode()throws InterruptedException {
 
-        robot.init(hardwareMap);
-
         telemetry.addData("Status","Initialized");
         telemetry.update();
+
+        robot.init(hardwareMap);
 
         robot.leftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         robot.rightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -53,30 +53,27 @@ abstract public class EncoderAuto extends LinearOpMode {
         int newLeftTarget;
         int newRightTarget;
 
-        if (opModeIsActive()){
+        //if (opModeIsActive()){
             newLeftTarget = robot.leftDrive.getCurrentPosition()+ (int)(leftInches * COUNTS_PER_INCH);
             newRightTarget = robot.rightDrive.getCurrentPosition() + (int)(rightInches * COUNTS_PER_INCH);
-            robot.leftDrive.setTargetPosition(newLeftTarget);
-            robot.rightDrive.setTargetPosition(newRightTarget);
 
             robot.leftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             robot.rightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        robot.leftDrive.setTargetPosition(newLeftTarget);
+        robot.rightDrive.setTargetPosition(newRightTarget);
 
             runtime.reset();
             robot.leftDrive.setPower(Math.abs(speed));
             robot.rightDrive.setPower(Math.abs(speed));
 
-            while (opModeIsActive() &&
-                    (runtime.seconds() < timeoutS) &&
-                    (robot.rightDrive.isBusy() && robot.leftDrive.isBusy())){
-                //  telemetry.addData("Path1", "Running to 7%d : 7%d", newLeftTarget, newRightTarget);
+            while (opModeIsActive() && (runtime.seconds() < timeoutS)){
+                telemetry.addData("Path1", "Running to 7%d : 7%d", newLeftTarget, newRightTarget);
                 telemetry.addData("Path2","Running at 7%d : 7%d");
                 robot.leftDrive.getCurrentPosition();
-
                 robot.rightDrive.getCurrentPosition();
                 telemetry.update();
-
-            }
+                }
             // Stop all motion;
             robot.leftDrive.setPower(0);
             robot.rightDrive.setPower(0);
@@ -91,5 +88,5 @@ abstract public class EncoderAuto extends LinearOpMode {
         }
 
 
-    }
+    //}
 }
