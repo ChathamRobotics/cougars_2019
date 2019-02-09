@@ -11,7 +11,7 @@ public class Hardware9853  {
     public DcMotor  rightArm      = null;
     public DcMotor  collection    = null;
     public DcMotor  hangClaw      = null;
-    public DcMotor  drawerSlide  = null;
+    public DcMotor  drawerSlide   = null;
 
    /*
     public static final double DRIVE_FOWARD_LEFT_POWER = .5;
