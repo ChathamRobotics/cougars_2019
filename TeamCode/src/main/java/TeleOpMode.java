@@ -28,23 +28,22 @@ public class TeleOpMode extends LinearOpMode
         // to 'get' must correspond to the names assigned during the robot configuration
 
         //Chassis Motors
-        leftDrive = hardwareMap.get(DcMotor.class, "leftDrive");
-        rightDrive = hardwareMap.get(DcMotor.class, "rightDrive");
-        drawerSlide = hardwareMap.get(DcMotor.class, "drawerSlide");
-        collection = hardwareMap.get(DcMotor.class, "collection");
-        leftArm = hardwareMap.get(DcMotor.class, "leftArm");
-        rightArm = hardwareMap.get(DcMotor.class, "rightArm");
-        hangClaw = hardwareMap.get(DcMotor.class, "hangClaw");
+        leftDrive = hardwareMap.get(DcMotor.class, "LeftDrive");
+        rightDrive = hardwareMap.get(DcMotor.class, "RightDrive");
+        drawerSlide = hardwareMap.get(DcMotor.class, "DrawerSlide");
+        collection = hardwareMap.get(DcMotor.class, "Collection");
+        leftArm = hardwareMap.get(DcMotor.class, "LeftArm");
+        rightArm = hardwareMap.get(DcMotor.class, "RightArm");
+        hangClaw = hardwareMap.get(DcMotor.class, "HangClaw");
 
         // Right motors are reversed because it is oriented differently then the Left side
         leftDrive.setDirection(DcMotor.Direction.FORWARD);
         rightDrive.setDirection(DcMotor.Direction.REVERSE);
         collection.setDirection(DcMotor.Direction.REVERSE);
-        drawerSlide.setDirection(DcMotor.Direction.FORWARD);
+        drawerSlide.setDirection(DcMotor.Direction.REVERSE);
         leftArm.setDirection(DcMotor.Direction.REVERSE);
         rightArm.setDirection(DcMotor.Direction.FORWARD);
-        hangClaw.setDirection(DcMotor.Direction.FORWARD);
-
+        //hangClaw.setDirection(DcMotor.Direction.);
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
         runtime.reset();
@@ -67,12 +66,15 @@ public class TeleOpMode extends LinearOpMode
 
             // - This uses basic math to combine motions and is easier to drive straight.
             drive = - gamepad1.left_stick_y;
-            turn = -gamepad1.right_stick_x;
-
+            turn = gamepad1.right_stick_x;
             rightPower = Range.clip(-(drive + turn), -1.0, 1.0) ;
+
             leftPower = Range.clip(-(drive - turn), -1.0, 1.0 );
 
 
+
+            // the dpad_up button on controller 2 will run the pinion to pull up the arm
+            // the dpad_down button on controller 2 will run the pinion the other way and let the arm down
             if (gamepad2.dpad_up == true)
             {
                 //UP
@@ -88,12 +90,12 @@ public class TeleOpMode extends LinearOpMode
                 pinionPower=0;
             }
 
-            if (gamepad2.right_bumper == true)
+            if (gamepad2.right_trigger > 0)
             {
                 // run the collector at 45% power
                 collectionPower = 0.45;
             }
-            else if (gamepad2.left_bumper == true)
+            else if (gamepad2.right_bumper == true)
             {
                 // set collector power to 45% but invert so it is in reverse
                 collectionPower = -0.45;
@@ -105,31 +107,21 @@ public class TeleOpMode extends LinearOpMode
             }
 
             //ARM POWER
-            if (gamepad2.right_trigger > 0)
+            if (gamepad1.right_trigger>0)
             {
+                //if right trigger is pressed then set power to 45%
+                //arm moves down
                 armPower = 0.45;
             }
-            else if  (gamepad2.left_trigger > 0)
+            else if  (gamepad1.right_bumper==true)
             {
+                //reverse arm power
+                //arm moves up
                 armPower = -0.45;
             }
-            else
+            else // if neither is being presed
             {
                 armPower=0;
-            }
-
-            //CLAMP
-            if (gamepad1.right_trigger > 0)
-            {
-                clawPower = 0.45;
-            }
-            else if  (gamepad1.left_trigger > 0)
-            {
-                clawPower = -0.45;
-            }
-            else
-            {
-                clawPower=0;
             }
 
             // Send calculated power to motors
@@ -139,7 +131,6 @@ public class TeleOpMode extends LinearOpMode
             drawerSlide.setPower(pinionPower);
             leftArm.setPower(armPower);
             rightArm.setPower(armPower);
-            hangClaw.setPower(clawPower);
 
             /* Show the elapsed game time and wheel power.
             telemetry.addData("Status", "Run Time: " + runtime.toString());
