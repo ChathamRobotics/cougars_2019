@@ -38,8 +38,11 @@ abstract public class EncoderAuto extends LinearOpMode {
         telemetry.update();
         waitForStart();
 
-        encoderDrive(DRIVE_SPEED,  48,  48, 5.0);  // S1: Forward 47 Inches with 5 Sec timeout
-        encoderDrive(TURN_SPEED,   12, -12, 4.0);  // S2: Turn Right 12 Inches with 4 Sec timeout
+        encoderDrive(DRIVE_SPEED,  39,  48, 1);  // S1: Forward 47 Inches with 5 Sec timeout
+        encoderDrive(TURN_SPEED,   12, -12, 1);  // S2: Turn Right 12 Inches with 4 Sec timeout
+        encoderDrive(DRIVE_SPEED, 11.75, 12, 1);
+
+
 
 
         telemetry.addData("Status", "Complete");
