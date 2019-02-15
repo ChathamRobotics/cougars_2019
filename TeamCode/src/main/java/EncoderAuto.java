@@ -5,7 +5,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 // :)
 @Autonomous (name = "EncoderAuto", group = "Linear OpMode")
-abstract public class EncoderAuto extends LinearOpMode {
+ public class EncoderAuto extends LinearOpMode {
 
     Hardware9853 robot = new Hardware9853();
     private ElapsedTime runtime = new ElapsedTime();
@@ -43,6 +43,9 @@ abstract public class EncoderAuto extends LinearOpMode {
         encoderDrive(DRIVE_SPEED, 11.75, 12, 1);
 
 
+        encoderDrive(DRIVE_SPEED,  48,  5, 5.0);  // S1: Forward 47 Inches with 5 Sec timeout
+        //encoderDrive(TURN_SPEED,   5, -12, 3.0);  // S2: Turn Right 12 Inches with 4 Sec timeout
+        //encoderDrive(DRIVE_SPEED, 11.75, 12, 1.0);
 
 
         telemetry.addData("Status", "Complete");
@@ -51,7 +54,7 @@ abstract public class EncoderAuto extends LinearOpMode {
 
     }
 
-    public void encoderDrive (  double leftInches, double rightInches, double speed, double timeoutS)
+    public void encoderDrive (double leftInches, double rightInches, double speed, double timeoutS)
     {
         int newLeftTarget;
         int newRightTarget;
@@ -59,12 +62,11 @@ abstract public class EncoderAuto extends LinearOpMode {
         //if (opModeIsActive()){
             newLeftTarget = robot.leftDrive.getCurrentPosition()+ (int)(leftInches * COUNTS_PER_INCH);
             newRightTarget = robot.rightDrive.getCurrentPosition() + (int)(rightInches * COUNTS_PER_INCH);
+            robot.leftDrive.setTargetPosition(newLeftTarget);
+            robot.rightDrive.setTargetPosition(newRightTarget);
 
             robot.leftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             robot.rightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-        robot.leftDrive.setTargetPosition(newLeftTarget);
-        robot.rightDrive.setTargetPosition(newRightTarget);
 
             runtime.reset();
             robot.leftDrive.setPower(Math.abs(speed));
