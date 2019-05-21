@@ -1,0 +1,145 @@
+
+package org.firstinspires.ftc.teamcode;
+
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.CRServo;
+
+@TeleOp(name="Tele-Op:Worlds", group="Pushbot")
+//@Disabled
+
+public class TeleOpWorlds extends LinearOpMode {
+   HardwareDec6 robot = new HardwareDec6();   // Use a Pushbot's hardware
+   static final int COUNTS_PER_MOTOR_REV = 1120;
+   private ElapsedTime runtime = new ElapsedTime();
+a//right trigger up
+   //left trigger down
+
+
+   //Servo   markerServo;
+  CRServo   surgicalTubing;
+
+
+   public void runOpMode() {
+
+
+      // markerServo = hardwareMap.get(Servo.class, "markerServo");
+   //    markerServo.setPosition(.05);
+
+       surgicalTubing = hardwareMap.get(CRServo.class, "surgicalTubing");
+
+
+
+       //    markerServo.setPosition(.05);
+
+            robot.init(hardwareMap);
+            telemetry.addData("init","init");
+            telemetry.update();
+       surgicalTubing.setPower(0);
+
+
+     //  markerServo.setPosition(.05);
+       // Wait for the game to start (driver presses PLAY)
+       waitForStart();
+       while (opModeIsActive()){
+               //turn using gamepad 1 bumpers.
+               if (gamepad1.right_bumper) {
+                   robot.leftFront.setPower(.8);
+                   robot.rightFront.setPower(-.8);
+                   robot.leftRear.setPower(.8);
+                   robot.rightRear.setPower(-.8);
+               } else if (gamepad1.left_bumper) {
+                   robot.leftFront.setPower(-.8);
+                   robot.rightFront.setPower(.8);
+                   robot.leftRear.setPower(-.8);
+                   robot.rightRear.setPower(.8);
+
+
+               //strafe using gamepad 1 triggers.
+               } else if (gamepad1.right_trigger != 0) {
+                   robot.leftFront.setPower(1);
+                   robot.rightFront.setPower(-1);
+                   robot.leftRear.setPower(-1);
+                   robot.rightRear.setPower(1);
+               } else if (gamepad1.left_trigger != 0) {
+                   robot.leftFront.setPower(-1);
+                   robot.rightFront.setPower(1);
+                   robot.leftRear.setPower(1);
+                   robot.rightRear.setPower(-1);
+
+               } else {
+                   //gamepad 1 lift joystick up and down = drive foward backward
+                   robot.leftFront.setPower(gamepad1.left_stick_y);
+                   robot.rightFront.setPower(gamepad1.left_stick_y);
+                   robot.leftRear.setPower(gamepad1.left_stick_y);
+                   robot.rightRear.setPower(gamepad1.left_stick_y);
+               //gamepad 1 right joystick left and right = turn
+//                robot.leftFront.setPower(-gamepad1.right_stick_x);
+//                robot.leftRear.setPower(-gamepad1.right_stick_x);
+//                robot.rightFront.setPower(-gamepad1.right_stick_x);
+//                robot.rightRear.setPower(gamepad1.right_stick_x);
+
+
+               }
+
+               if(gamepad2.right_trigger!=0)
+               {
+                   robot.intakeMotor.setPower(.45);
+               }
+               else if (gamepad2.left_trigger!=0)
+               {
+                   robot.intakeMotor.setPower(-.25);
+               }
+
+               if(gamepad2.x)
+               {
+                   surgicalTubing.setPower(1);
+               }
+               else if (gamepad2.b)
+               {
+                   surgicalTubing.setPower(-1);
+               }
+               else
+               {
+                   surgicalTubing.setPower(0);
+               }
+
+
+
+
+
+
+
+           //gamepad 1 up button = lift up/robot down
+               if (gamepad2.y) {
+                   //add encoders
+                   robot.liftMotor.setPower(-1);
+               }
+              //gamepad 1 up button = lift down/robot up
+               if (gamepad2.a) {
+                   //add encoders
+                   robot.liftMotor.setPower(1);
+               } else {
+                   robot.liftMotor.setPower(0);
+               }
+               //gamepad 2 down button = surgical tubing intake in
+               if (gamepad2.dpad_down) {
+                   robot.intakeMotor.setPower(.5);
+               }
+               //gamepad 2 up button = surgical tubing intake out
+               else if (gamepad2.dpad_up) {
+                   robot.intakeMotor.setPower(-.5);
+               } else {
+                   robot.intakeMotor.setPower(0);
+               }
+
+               robot.shooterMotor.setPower(gamepad2.left_stick_y);
+               idle();
+           }
+       }}
+
+
+
+
