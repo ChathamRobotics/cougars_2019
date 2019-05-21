@@ -1,0 +1,342 @@
+package org.firstinspires.ftc.teamcode;
+
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.ElapsedTime;
+
+import org.firstinspires.ftc.robotcore.external.ClassFactory;
+import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
+import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer.CameraDirection;
+import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
+import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
+
+import java.util.List;
+
+@Autonomous(name = "Crater side w/ sensing", group = "Concept")
+//@Disabled
+public class auto123crater extends LinearOpMode {
+   HardwareDec6 robot = new HardwareDec6();
+   ParticleSensing detect = new ParticleSensing();
+
+   Servo markerServo;
+
+   private ElapsedTime runtime = new ElapsedTime();
+   private static final String TFOD_MODEL_ASSET = "RoverRuckus.tflite";
+   private static final String LABEL_GOLD_MINERAL = "Gold Mineral";
+   private static final String LABEL_SILVER_MINERAL = "Silver Mineral";
+   public int goldPosition = 4;
+   private static final String VUFORIA_KEY = " AXsx35v/////AAABmWBqbBfSMEPupurLi7k1PLddw5sIyRD6WNQ+9v0DD4mKN9RWaPTy6gOlH1N9SANJpYeA5raCC0T/HmxzW+FpKJ6yVynJcXqOqD/sfiu6uIhj2+QjEuT0Yr0CazIjmhi7p1G4uR82t99PvqOIgsN81qH5JTAkxHyOEQTaRyG6Hey4AXkOwIfRwjNSQqEW+/rjC0Ji4+XlkraVlHGy4YazdGO9igcP16R7BCaCpezrZ6dmg3QghgDja8DeA2LImH5NOCyRkRYlacWmvN9H5UvmpVaROxz4kNYxvYE2atfhCyOs7B9iVAX7M/S7SCE3RIr8U0MQY/+7gMTvsO/ByntoU6LhorEEJF4y1Oj0ulvqtGqG ";
+   /**
+    * {@link #vuforia} is the variable we will use to store our instance of the Vuforia
+    * localization engine.
+    */
+   private VuforiaLocalizer vuforia;
+   /**
+    * {@link #tfod} is the variable we will use to store our instance of the Tensor Flow Object
+    * Detection engine.
+    */
+   private TFObjectDetector tfod;
+
+   @Override
+   public void runOpMode() {
+
+       markerServo = hardwareMap.get(Servo.class, "markerServo");
+       robot.init(hardwareMap);
+
+       markerServo.setPosition(0);
+
+       telemetry.addData("Status", "Initialized");
+       telemetry.update();
+       //  detect.runOpMode();
+       waitForStart();
+
+       runtime.reset();
+       sleep(500);
+       sense();
+       sleep(500);
+       liftUp(2.7, .25);
+       sleep(500);
+       driveBackward(.35, .25);
+       sleep(500);
+       strafeRight(.4, 1);
+       sleep(500);
+       turnLeft(.6, .5);
+       sleep(500);
+       driveBackward(.365,.25);
+       sleep(500);
+       if (goldPosition == 3)//left
+       {
+           strafeRight(1.12, 1);
+       }
+       if (goldPosition == 2)//center
+       {
+           strafeRight(.75, 1);
+       }
+       if (goldPosition == 1)//right
+       {
+           strafeLeft(.42, 1);
+       }
+       sleep(500);
+       driveBackward(.75, .25);
+   }
+
+
+   public void liftUp(double secs, double power) {
+       telemetry.addData("Direction:", "down");
+       telemetry.update();
+       ElapsedTime methodTimeD = new ElapsedTime();
+       methodTimeD.reset();
+       while (opModeIsActive() && methodTimeD.seconds() < secs) {
+           robot.liftMotor.setPower(-power);
+       }
+       robot.liftMotor.setPower(0);
+   }
+
+   public void driveBackward(double secs, double power) {
+       ElapsedTime methodTimeB = new ElapsedTime();
+       methodTimeB.reset();
+       telemetry.addData("Direction:", "backwards");
+       telemetry.update();
+       while (opModeIsActive() && methodTimeB.seconds() < secs) {
+           robot.leftFront.setPower(power);
+           robot.leftRear.setPower(power);
+           robot.rightFront.setPower(power);
+           robot.rightRear.setPower(power);
+       }
+       robot.leftFront.setPower(0);
+       robot.leftRear.setPower(0);
+       robot.rightFront.setPower(0);
+       robot.rightRear.setPower(0);
+   }
+
+   public void driveForward(double secs, double power) {
+       telemetry.addData("Direction:", "forwards");
+       telemetry.update();
+       ElapsedTime methodTimeF = new ElapsedTime();
+       methodTimeF.reset();
+       while (opModeIsActive() && methodTimeF.seconds() < secs) {
+           robot.leftFront.setPower(-power);
+           robot.leftRear.setPower(-power);
+           robot.rightFront.setPower(-power);
+           robot.rightRear.setPower(-power);
+       }
+       robot.leftFront.setPower(0);
+       robot.leftRear.setPower(0);
+       robot.rightFront.setPower(0);
+       robot.rightRear.setPower(0);
+   }
+
+   public void strafeLeft(double secs, double power) {
+       telemetry.addData("Direction:", "strafing left");
+       telemetry.update();
+       ElapsedTime methodTimeSL = new ElapsedTime();
+       methodTimeSL.reset();
+       while (opModeIsActive() && methodTimeSL.seconds() < secs) {
+           robot.leftFront.setPower(-power);
+           robot.leftRear.setPower(power);
+           robot.rightFront.setPower(power);
+           robot.rightRear.setPower(-power);
+       }
+       robot.leftFront.setPower(0);
+       robot.leftRear.setPower(0);
+       robot.rightFront.setPower(0);
+       robot.rightRear.setPower(0);
+   }
+
+   public void strafeRight(double secs, double power) {
+       telemetry.addData("Direction:", "strafing right");
+       telemetry.update();
+       ElapsedTime methodTimeSR = new ElapsedTime();
+       methodTimeSR.reset();
+       while (opModeIsActive() && methodTimeSR.seconds() < secs) {
+           robot.leftFront.setPower(power);
+           robot.leftRear.setPower(-power);
+           robot.rightFront.setPower(-power);
+           robot.rightRear.setPower(power);
+       }
+       robot.leftFront.setPower(0);
+       robot.leftRear.setPower(0);
+       robot.rightFront.setPower(0);
+       robot.rightRear.setPower(0);
+   }
+
+   public void turnLeft(double secs, double power) {
+       telemetry.addData("Direction:", "turning left");
+       telemetry.update();
+       ElapsedTime methodTimeTL = new ElapsedTime();
+       methodTimeTL.reset();
+       while (opModeIsActive() && methodTimeTL.seconds() < secs) {
+           robot.leftFront.setPower(-power);
+           robot.leftRear.setPower(-power);
+           robot.rightFront.setPower(power);
+           robot.rightRear.setPower(power);
+       }
+       robot.leftFront.setPower(0);
+       robot.leftRear.setPower(0);
+       robot.rightFront.setPower(0);
+       robot.rightRear.setPower(0);
+   }
+
+   public void turnRight(double secs, double power) {
+       telemetry.addData("Direction:", "turning right");
+       telemetry.update();
+       ElapsedTime methodTimeTR = new ElapsedTime();
+       methodTimeTR.reset();
+       while (opModeIsActive() && methodTimeTR.seconds() < secs) {
+           robot.leftFront.setPower(power);
+           robot.leftRear.setPower(power);
+           robot.rightFront.setPower(-power);
+           robot.rightRear.setPower(-power);
+       }
+       robot.leftFront.setPower(0);
+       robot.leftRear.setPower(0);
+       robot.rightFront.setPower(0);
+       robot.rightRear.setPower(0);
+   }
+
+   public void dropMarker() {
+       telemetry.addData("status:", "dropping marker");
+       telemetry.update();
+       markerServo.setPosition(0);
+   }
+
+   public int sense() {
+       // The TFObjectDetector uses the camera frames from the VuforiaLocalizer, so we create that
+       // first.
+       ElapsedTime methodTimeS = new ElapsedTime();
+       methodTimeS.reset();
+
+       while (opModeIsActive() && goldPosition == 4 && methodTimeS.seconds() < 5)
+       {
+
+           initVuforia();
+
+           if (ClassFactory.getInstance().canCreateTFObjectDetector()) {
+               initTfod();
+           } else {
+               telemetry.addData("Sorry!", "This device is not compatible with TFOD");
+           }
+
+
+           /** Wait for the game to begin */
+           telemetry.addData(">", "Press Play to start tracking");
+           telemetry.update();
+           waitForStart();
+
+           if (opModeIsActive() && methodTimeS.seconds() < 5)
+           {
+               /** Activate Tensor Flow Object Detection. */
+               if (tfod != null)
+               {
+                   tfod.activate();
+               }
+               while (opModeIsActive())
+               {
+                   if (tfod != null)
+                   {
+                       // getUpdatedRecognitions() will return null if no new information is available since
+                       // the last time that call was made.
+                       List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
+                       if (updatedRecognitions != null)
+                       {
+                           telemetry.addData("# Object Detected", updatedRecognitions.size());
+                           if (updatedRecognitions.size() == 2)
+                           {
+                               int goldMineralX = -1;
+                               int silverMineral1X = -1;
+                               int silverMineral2X = -1;
+                               for (Recognition recognition : updatedRecognitions)
+                               {
+                                   if (recognition.getLabel().equals(LABEL_GOLD_MINERAL))
+                                   {
+                                       goldMineralX = (int) recognition.getLeft();
+                                   }
+                                   else if (silverMineral1X == -1)
+                                   {
+                                       silverMineral1X = (int) recognition.getLeft();
+                                   }
+                                   else
+                                   {
+                                       silverMineral2X = (int) recognition.getLeft();
+                                   }
+                               }
+                               // If there is no gold (-1) and there two silvers (not -1) the gold
+                               // is not visible, and must be on the right
+                               if (goldMineralX == -1 && silverMineral1X != -1 && silverMineral2X != -1)
+                               {
+                                   telemetry.addData("Gold Mineral Position", "Left");
+                                   goldPosition = 1;
+                                   return goldPosition;
+                               }
+                               // If you can see one gold and one silver ...
+                               else if (goldMineralX != -1 && silverMineral1X != -1)
+                               {
+                                   // ... if the gold is to the right of the silver, the gold is in the center ...
+                                   if (goldMineralX > silverMineral1X)
+                                   {
+                                       telemetry.addData("Gold Mineral Position", "Right");
+                                       //goldPosition = 3;
+                                       goldPosition = 3;
+                                       return goldPosition;
+                                   }
+                                   // ... otherwise it is on the left
+                                   else
+                                   {
+                                       telemetry.addData("Gold Mineral Position", "Center");
+                                       //goldPosition = 2;
+                                       goldPosition = 2;
+                                       return goldPosition;
+                                   }
+                               }
+                           }
+                           telemetry.update();
+
+                       }
+
+                   }
+
+               }
+
+           }
+           if (tfod != null) {
+               tfod.shutdown();
+
+           }
+
+       }
+       return goldPosition;
+   }
+
+
+
+
+       /*
+        * Initialize the Vuforia localization engine.
+        */
+       private void initVuforia () {
+           /*
+            * Configure Vuforia by creating a Parameter object, and passing it to the Vuforia engine.
+            */
+           VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
+           parameters.vuforiaLicenseKey = VUFORIA_KEY;
+           parameters.cameraDirection = CameraDirection.FRONT;
+           TFObjectDetector.Parameters tfodParameters = new TFObjectDetector.Parameters();
+           tfodParameters.minimumConfidence = 0.75;
+           //  Instantiate the Vuforia engine
+           vuforia = ClassFactory.getInstance().createVuforia(parameters);
+           // Loading trackables is not necessary for the Tensor Flow Object Detection engine.
+       }
+       /*
+        * Initialize the Tensor Flow Object Detection engine.
+        */
+       private void initTfod () {
+           int tfodMonitorViewId = hardwareMap.appContext.getResources().getIdentifier(
+                   "tfodMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+           TFObjectDetector.Parameters tfodParameters = new TFObjectDetector.Parameters(tfodMonitorViewId);
+           tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vuforia);
+           tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABEL_GOLD_MINERAL, LABEL_SILVER_MINERAL);
+       }
+
+}
+
